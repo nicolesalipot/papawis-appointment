@@ -1,0 +1,42 @@
+---
+description: 
+globs: webapp/*,salesapp/*
+alwaysApply: false
+---
+# Frontend Development Patterns
+
+## Component Structure
+- Use functional components with hooks
+- Separate business logic from presentation components
+- Place reusable components in [webapp/src/components/](mdc:webapp/src/components)
+- Place page components in [webapp/src/pages/](mdc:webapp/src/pages)
+- Place feature-specific components in [webapp/src/features/](mdc:webapp/src/features)
+
+## Styling Guidelines
+- Use Tailwind CSS for styling
+- Follow a minimalist design approach with clean layouts
+- Use soft, refreshing gradient colors that seamlessly integrate with the brand palette
+- Maintain consistent spacing and component sizing
+- Ensure responsive designs for all screen sizes
+- Utilize the design system in [design/](mdc:design) for reference
+
+## State Management
+- Use React hooks for local state
+- For global state, use the patterns established in [webapp/src/store/](mdc:webapp/src/store)
+- Keep state normalized and avoid duplication
+- Use custom hooks in [webapp/src/hooks/](mdc:webapp/src/hooks) for reusable logic
+
+## Routing
+- Follow the routing patterns defined in [webapp/src/router/](mdc:webapp/src/router)
+- Use route parameters for dynamic content
+- Implement lazy loading for route components where appropriate
+
+## Form Handling
+- Use form validation with clear user feedback
+- Implement error handling consistently
+- Follow accessibility best practices for all interactive elements
+
+## Data Fetching
+- Use custom hooks for API integrations
+- Handle loading, error, and success states appropriately
+- Implement proper error handling and user feedback

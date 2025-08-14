@@ -1,0 +1,25 @@
+---
+description: 
+globs: webapp/*
+alwaysApply: false
+---
+# Frontend Requirements (Vite)
+
+## Architecture
+- Implement React Router for client-side routing with nested routes
+- Follow feature-based folder structure with proper separation of concerns
+- Utilize TypeScript for type safety and improved developer experience
+- Implement proper state management using React Context or Zustand
+- Create reusable custom hooks for shared functionality
+
+## UI/UX
+- Use Tailwind CSS for consistent styling and responsive design
+- Implement shadcn/ui components for a polished, professional look
+- Create an intuitive step indicator to show progress in multi-step flows
+- Include clear call-to-action buttons and visual feedback for user interactions
+
+## Form Handling
+- Use React Hook Form for all form implementations
+- Implement Zod validation schemas for robust form validation
+- Create reusable form components for common input patterns
+- Provide real-time validation feedback to users
