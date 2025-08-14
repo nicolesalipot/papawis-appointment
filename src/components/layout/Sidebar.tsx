@@ -21,6 +21,11 @@ const navigation = [
     icon: Building2,
   },
   {
+    name: "Bookings",
+    href: "/admin/bookings",
+    icon: Calendar,
+  },
+  {
     name: "Users",
     href: "/admin/users",
     icon: Users,

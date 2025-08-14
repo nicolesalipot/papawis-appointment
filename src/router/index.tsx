@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { FacilitiesPage } from "@/pages/facilities/FacilitiesPage";
+import { BookingsPage } from "@/pages/bookings/BookingsPage";
 import { UsersPage } from "@/pages/users/UsersPage";
 import { ReportsPage } from "@/pages/reports/ReportsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: "facilities",
         element: <FacilitiesPage />,
+      },
+      {
+        path: "bookings",
+        element: <BookingsPage />,
       },
       {
         path: "users",
