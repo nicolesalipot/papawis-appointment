@@ -1,213 +1,240 @@
 import { Settings, Bell, Shield, Globe, Palette } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 export function SettingsPage() {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-        <p className="mt-2 text-slate-600">
-          Manage your application settings and preferences.
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* Settings Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Settings */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-              <Settings className="h-5 w-5 text-blue-600" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Settings className="h-5 w-5 text-primary" />
+              </div>
+              <CardTitle>General Settings</CardTitle>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              General Settings
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Application Name
-              </label>
-              <input
-                type="text"
-                defaultValue="SportsFacility"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="app-name">Application Name</Label>
+                <Input id="app-name" type="text" defaultValue="Papawis" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timezone">Time Zone</Label>
+                <Select defaultValue="utc-8">
+                  <SelectTrigger id="timezone">
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="utc-8">UTC-8 (Pacific Time)</SelectItem>
+                    <SelectItem value="utc-5">UTC-5 (Eastern Time)</SelectItem>
+                    <SelectItem value="utc+0">
+                      UTC+0 (Greenwich Mean Time)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="booking-duration">
+                  Default Booking Duration
+                </Label>
+                <Select defaultValue="60">
+                  <SelectTrigger id="booking-duration">
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="60">60 minutes</SelectItem>
+                    <SelectItem value="90">90 minutes</SelectItem>
+                    <SelectItem value="120">120 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Time Zone
-              </label>
-              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>UTC-8 (Pacific Time)</option>
-                <option>UTC-5 (Eastern Time)</option>
-                <option>UTC+0 (Greenwich Mean Time)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Default Booking Duration
-              </label>
-              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>30 minutes</option>
-                <option>60 minutes</option>
-                <option>90 minutes</option>
-                <option>120 minutes</option>
-              </select>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Notifications */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-              <Bell className="h-5 w-5 text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Notifications
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              {
-                name: "Email Notifications",
-                description: "Receive email updates for bookings",
-              },
-              {
-                name: "SMS Notifications",
-                description: "Get SMS alerts for urgent updates",
-              },
-              {
-                name: "Desktop Notifications",
-                description: "Show browser notifications",
-              },
-              {
-                name: "Weekly Reports",
-                description: "Receive weekly usage reports",
-              },
-            ].map((setting) => (
-              <div
-                key={setting.name}
-                className="flex items-center justify-between"
-              >
-                <div>
-                  <p className="text-sm font-medium text-slate-900">
-                    {setting.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {setting.description}
-                  </p>
-                </div>
-                <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                  <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
-                </button>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                <Bell className="h-5 w-5 text-green-600" />
               </div>
-            ))}
-          </div>
-        </div>
+              <CardTitle>Notifications</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                {
+                  id: "email-notifications",
+                  name: "Email Notifications",
+                  description: "Receive email updates for bookings",
+                },
+                {
+                  id: "sms-notifications",
+                  name: "SMS Notifications",
+                  description: "Get SMS alerts for urgent updates",
+                },
+                {
+                  id: "desktop-notifications",
+                  name: "Desktop Notifications",
+                  description: "Show browser notifications",
+                },
+                {
+                  id: "weekly-reports",
+                  name: "Weekly Reports",
+                  description: "Receive weekly usage reports",
+                },
+              ].map((setting) => (
+                <div
+                  key={setting.id}
+                  className="flex items-center justify-between space-x-2"
+                >
+                  <Label
+                    htmlFor={setting.id}
+                    className="flex flex-col space-y-1 cursor-pointer"
+                  >
+                    <span className="text-sm font-medium text-foreground">
+                      {setting.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {setting.description}
+                    </span>
+                  </Label>
+                  <Switch id={setting.id} defaultChecked />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Security */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
-              <Shield className="h-5 w-5 text-red-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900">Security</h3>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Session Timeout
-              </label>
-              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>15 minutes</option>
-                <option>30 minutes</option>
-                <option>1 hour</option>
-                <option>4 hours</option>
-              </select>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  Two-Factor Authentication
-                </p>
-                <p className="text-xs text-slate-500">
-                  Add an extra layer of security
-                </p>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+                <Shield className="h-5 w-5 text-red-600" />
               </div>
-              <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
-                Enable
-              </button>
+              <CardTitle>Security</CardTitle>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  Login Audit
-                </p>
-                <p className="text-xs text-slate-500">
-                  Track login attempts and history
-                </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="session-timeout">Session Timeout</Label>
+                <Select defaultValue="30">
+                  <SelectTrigger id="session-timeout">
+                    <SelectValue placeholder="Select timeout" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 minutes</SelectItem>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="240">4 hours</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <button className="px-3 py-1 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">
-                View Logs
-              </button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Two-Factor Authentication
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Add an extra layer of security
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="text-primary">
+                  Enable
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Login Audit
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Track login attempts and history
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  View Logs
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Appearance */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-              <Palette className="h-5 w-5 text-purple-600" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                <Palette className="h-5 w-5 text-purple-600" />
+              </div>
+              <CardTitle>Appearance</CardTitle>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">Appearance</h3>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Theme
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {["Light", "Dark", "Auto"].map((theme) => (
-                  <button
-                    key={theme}
-                    className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
-                      theme === "Light"
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                    }`}
-                  >
-                    {theme}
-                  </button>
-                ))}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Theme</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["Light", "Dark", "Auto"].map((theme) => (
+                    <Button
+                      key={theme}
+                      variant={theme === "Light" ? "default" : "outline"}
+                      size="sm"
+                      className="w-full"
+                    >
+                      {theme}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="language">Language</Label>
+                <Select defaultValue="english">
+                  <SelectTrigger id="language">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="spanish">Spanish</SelectItem>
+                    <SelectItem value="french">French</SelectItem>
+                    <SelectItem value="german">German</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Language
-              </label>
-              <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>English</option>
-                <option>Spanish</option>
-                <option>French</option>
-                <option>German</option>
-              </select>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
-          Save Changes
-        </button>
+      <div className="flex justify-end pt-4">
+        <Button>Save Changes</Button>
       </div>
     </div>
   );

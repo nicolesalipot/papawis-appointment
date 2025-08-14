@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+  <!-- Tennis Court Background -->
+  <rect width="600" height="400" fill="#2E7D32"/>
+
+  <!-- Tennis Court Lines -->
+  <g stroke="white" stroke-width="3" fill="none">
+    <!-- Outer Court Lines -->
+    <rect x="50" y="50" width="500" height="300"/>
+
+    <!-- Service Lines -->
+    <line x1="50" y1="170" x2="550" y2="170"/>
+    <line x1="50" y1="230" x2="550" y2="230"/>
+
+    <!-- Center Service Line -->
+    <line x1="300" y1="170" x2="300" y2="230"/>
+
+    <!-- Net -->
+    <line x1="50" y1="200" x2="550" y2="200" stroke-width="6" stroke="#333"/>
+
+    <!-- Net Posts -->
+    <circle cx="50" cy="200" r="4" fill="white"/>
+    <circle cx="550" cy="200" r="4" fill="white"/>
+  </g>
+
+  <!-- Title -->
+  <text x="300" y="380" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">
+    Tennis Court Sample
+  </text>
+</svg>

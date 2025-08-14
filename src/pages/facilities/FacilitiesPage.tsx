@@ -20,6 +20,25 @@ import {
   FacilityFormData,
 } from "@/lib/types/facility";
 import { FacilityForm } from "@/components/facilities/FacilityForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function FacilitiesPage() {
   const {
@@ -28,19 +47,21 @@ export function FacilitiesPage() {
     filters,
     isLoading,
     error,
-    fetchFacilities,
+
     setFilters,
     setPagination,
     deleteFacility,
     createFacility,
+    fetchFacilities,
   } = useFacilityStore();
 
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // Load facilities on mount and when filters change
   useEffect(() => {
     fetchFacilities();
-  }, [fetchFacilities, filters, pagination.page, pagination.pageSize]);
+  }, [fetchFacilities, filters, pagination.page]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -77,8 +98,6 @@ export function FacilitiesPage() {
   const handleCreateFacility = async (data: FacilityFormData) => {
     try {
       await createFacility(data);
-      // Refresh the list
-      await fetchFacilities();
     } catch (error) {
       console.error("Failed to create facility:", error);
       throw error;
@@ -98,98 +117,122 @@ export function FacilitiesPage() {
     other: "Other",
   };
 
-  const statusColors: Record<FacilityStatus, string> = {
-    active: "bg-green-100 text-green-800",
-    inactive: "bg-gray-100 text-gray-800",
-    maintenance: "bg-yellow-100 text-yellow-800",
-    closed: "bg-red-100 text-red-800",
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Facilities</h1>
-          <p className="mt-2 text-slate-600">
-            Manage your sports facilities and their availability.
-          </p>
-        </div>
-        <button
+    <div className="space-y-6">
+      {/* Top Actions */}
+      <div className="flex justify-end">
+        <Button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
+          className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
           Add Facility
-        </button>
+        </Button>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search facilities..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search facilities..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Type Filter */}
+              <div className="min-w-[140px]">
+                <Select
+                  value={filters.type || "all"}
+                  onValueChange={(value) => handleFilterChange("type", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {Object.entries(facilityTypeLabels).map(
+                      ([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="min-w-[140px]">
+                <Select
+                  value={filters.status || "all"}
+                  onValueChange={(value) => handleFilterChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clear Filters */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilters({ search: "", type: "all", status: "all" });
+                }}
+                className="ml-auto"
+              >
+                Clear Filters
+              </Button>
+            </div>
           </div>
-
-          {/* Type Filter */}
-          <select
-            value={filters.type || "all"}
-            onChange={(e) => handleFilterChange("type", e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Types</option>
-            {Object.entries(facilityTypeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filters.status || "all"}
-            onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="closed">Closed</option>
-          </select>
-
-          {/* Clear Filters */}
-          <button
-            onClick={() => {
-              setSearchTerm("");
-              setFilters({ search: "", type: "all", status: "all" });
-            }}
-            className="px-3 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-          >
-            Clear Filters
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <Skeleton className="h-32 w-full mb-4" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -197,79 +240,104 @@ export function FacilitiesPage() {
       {!isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {facilities.map((facility) => (
-            <div
+            <Card
               key={facility.id}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200"
+              className="hover:shadow-md transition-shadow duration-200"
             >
-              {/* Facility Image */}
-              {facility.images.length > 0 && (
-                <div className="mb-4 rounded-lg overflow-hidden">
-                  <img
-                    src={facility.images[0].url}
-                    alt={facility.images[0].alt}
-                    className="w-full h-32 object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-blue-50 to-purple-50">
-                    <Building2 className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">
-                      {facility.name}
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      {facilityTypeLabels[facility.type]}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[facility.status]
-                  }`}
-                >
-                  {facility.status}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <MapPin className="h-4 w-4" />
-                  {facility.location}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Users className="h-4 w-4" />
-                  Capacity: {facility.capacity} people
-                </div>
-                {facility.pricePerHour && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Clock className="h-4 w-4" />${facility.pricePerHour}/hour
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <div className="flex gap-2">
-                  <button className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 flex items-center justify-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    View
-                  </button>
-                  <button className="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200 flex items-center justify-center gap-1">
-                    <Edit3 className="h-3 w-3" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(facility.id, facility.name)}
-                    className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-200"
+              <CardContent className="p-6">
+                {/* Facility Image */}
+                <div className="mb-4 rounded-lg overflow-hidden bg-gray-100">
+                  {facility.images.length > 0 ? (
+                    <img
+                      src={facility.images[0].url}
+                      alt={facility.images[0].alt}
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const fallback =
+                          target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-full h-32 flex items-center justify-center text-gray-400"
+                    style={{
+                      display: facility.images.length > 0 ? "none" : "flex",
+                    }}
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                    <Building2 className="h-8 w-8" />
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        {facility.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {facilityTypeLabels[facility.type]}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={
+                      facility.status === "active"
+                        ? "default"
+                        : facility.status === "inactive"
+                        ? "secondary"
+                        : facility.status === "maintenance"
+                        ? "outline"
+                        : "destructive"
+                    }
+                  >
+                    {facility.status}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    {facility.location}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                    Capacity: {facility.capacity} people
+                  </div>
+                  {facility.pricePerHour && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />${facility.pricePerHour}/hour
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="h-3 w-3 mr-1" />
+                      View
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Edit3 className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(facility.id, facility.name)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -277,11 +345,11 @@ export function FacilitiesPage() {
       {/* Empty State */}
       {!isLoading && facilities.length === 0 && !error && (
         <div className="text-center py-12">
-          <Building2 className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-2 text-sm font-semibold text-slate-900">
+          <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-semibold text-foreground">
             No facilities found
           </h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {filters.search ||
             filters.type !== "all" ||
             filters.status !== "all"
@@ -289,59 +357,61 @@ export function FacilitiesPage() {
               : "Get started by creating a new facility."}
           </p>
           <div className="mt-6">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-            >
+            <Button onClick={() => setIsCreateModalOpen(true)}>
               Add your first facility
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {/* Pagination */}
       {!isLoading && facilities.length > 0 && (
-        <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 px-6 py-4">
-          <div className="text-sm text-slate-600">
-            Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
-            {Math.min(pagination.page * pagination.pageSize, pagination.total)}{" "}
-            of {pagination.total} facilities
-          </div>
+        <Card>
+          <CardContent className="flex items-center justify-between px-6 py-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
+              {Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.total
+              )}{" "}
+              of {pagination.total} facilities
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
 
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
-              (page) => (
-                <button
+              {Array.from(
+                { length: pagination.totalPages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <Button
                   key={page}
+                  variant={page === pagination.page ? "default" : "outline"}
+                  size="sm"
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                    page === pagination.page
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-600 bg-slate-100 hover:bg-slate-200"
-                  }`}
                 >
                   {page}
-                </button>
-              )
-            )}
+                </Button>
+              ))}
 
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Create Facility Modal */}

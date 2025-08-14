@@ -1,0 +1,610 @@
+---
+description: Project Rules - Folder Structure and Tech Stack Guidelines
+globs: src/**/*
+alwaysApply: true
+---
+
+# Project Rules: Cursor Workshop - Facility Booking System
+
+## Tech Stack Overview
+
+### Core Framework
+
+- **React 19** with **TypeScript** - Latest React with full type safety
+- **Vite** - Fast build tool and development server
+- **SWC** - Super fast TypeScript/JavaScript compiler
+
+### Styling & UI
+
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **shadcn/ui** - High-quality component library built on Radix UI
+- **Radix UI** - Unstyled, accessible UI primitives
+- **Lucide React** - Beautiful icon library
+- **class-variance-authority** - Type-safe CSS class variants
+- **clsx + tailwind-merge** - Conditional CSS class utilities
+
+### State Management & Data
+
+- **Zustand** - Lightweight state management (preferred over Context)
+- **React Hook Form** - Performant form handling
+- **Zod** - TypeScript-first schema validation
+- **date-fns** - Modern date utility library
+
+### Routing & Navigation
+
+- **React Router v7** - Client-side routing with nested routes
+- **Dynamic imports** - Code splitting and lazy loading
+
+### Development Tools
+
+- **MSW (Mock Service Worker)** - API mocking for development
+- **ESLint** - Code linting and quality
+- **TypeScript ESLint** - TypeScript-specific linting rules
+
+### Charts & Analytics
+
+- **Recharts** - React charting library for analytics dashboards
+
+## Folder Structure Rules
+
+### Complete Project Structure
+
+```
+cursor-workshop/
+├── public/                    # Static assets served by Vite
+│   ├── mockServiceWorker.js  # MSW worker script
+│   └── vite.svg             # Favicon and static images
+├── docs/                     # Project documentation
+│   ├── DEVELOPMENT_PLAN.md
+│   ├── ENV_SETUP.md
+│   └── *.md                 # Phase completion summaries and checklists
+├── src/                     # Main application source code
+│   ├── components/          # Reusable UI components
+│   │   ├── ui/             # shadcn/ui base components
+│   │   ├── auth/           # Authentication components
+│   │   ├── layout/         # Layout components (Sidebar, TopBar)
+│   │   ├── bookings/       # Booking-related components
+│   │   ├── facilities/     # Facility management components
+│   │   ├── calendar/       # Calendar and date components
+│   │   ├── charts/         # Analytics and chart components
+│   │   └── analytics/      # Analytics dashboard components
+│   ├── pages/              # Route components (main app pages)
+│   │   ├── auth/           # Authentication pages
+│   │   ├── dashboard/      # Main dashboard pages
+│   │   ├── bookings/       # Booking management pages
+│   │   ├── facilities/     # Facility management pages
+│   │   ├── customer/       # Customer portal pages
+│   │   ├── users/          # User management pages
+│   │   ├── reports/        # Analytics and reporting pages
+│   │   └── settings/       # Application settings pages
+│   ├── features/           # Feature-specific components and logic
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utilities and configurations
+│   │   ├── types/          # TypeScript type definitions
+│   │   │   ├── auth.ts     # Authentication types
+│   │   │   ├── booking.ts  # Booking system types
+│   │   │   ├── facility.ts # Facility management types
+│   │   │   ├── user.ts     # User management types
+│   │   │   └── analytics.ts # Analytics types
+│   │   └── utils.ts        # General utility functions
+│   ├── store/              # Zustand state stores
+│   │   ├── authStore.ts    # Authentication state
+│   │   ├── bookingStore.ts # Booking system state
+│   │   ├── facilityStore.ts # Facility management state
+│   │   ├── userStore.ts    # User management state
+│   │   └── analyticsStore.ts # Analytics state
+│   ├── router/             # Routing configuration
+│   │   └── index.tsx       # Main router setup
+│   ├── mocks/              # MSW API mocking
+│   │   ├── browser.ts      # Browser mock setup
+│   │   └── handlers.ts     # API mock handlers
+│   ├── assets/             # Static assets (images, icons)
+│   │   └── react.svg       # Component assets
+│   ├── App.tsx             # Main App component
+│   ├── main.tsx           # Application entry point
+│   ├── index.css          # Global styles and Tailwind imports
+│   └── vite-env.d.ts      # Vite type definitions
+├── components.json         # shadcn/ui configuration
+├── package.json           # Dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+├── tsconfig.app.json      # App-specific TypeScript config
+├── tsconfig.node.json     # Node.js TypeScript config
+├── vite.config.ts         # Vite configuration
+├── eslint.config.js       # ESLint configuration
+└── README.md              # Project documentation
+```
+
+### Detailed Folder Guidelines
+
+#### `/public` - Static Assets
+
+- **Purpose**: Files served directly by Vite without processing
+- **Contents**:
+  - `mockServiceWorker.js` - MSW service worker for API mocking
+  - `vite.svg` - Favicon and other static images
+  - Robots.txt, manifest files, etc.
+- **Rules**:
+  - Keep minimal - only files that need to be publicly accessible
+  - No source code or processed assets
+
+#### `/docs` - Project Documentation
+
+- **Purpose**: Project documentation and planning materials
+- **Contents**:
+  - Development plans and phase documentation
+  - Environment setup guides
+  - Completion summaries and checklists
+- **Rules**:
+  - Use clear, descriptive filenames
+  - Keep documentation up-to-date with project changes
+  - Use Markdown format for consistency
+
+#### `/src/components` - Reusable UI Components
+
+- **Purpose**: Components used across multiple pages/features
+- **Structure**:
+  - **`/ui`** - shadcn/ui base components (Button, Input, Dialog, etc.)
+  - **`/auth`** - Authentication components (LoginForm, ProtectedRoute)
+  - **`/layout`** - Layout components (Sidebar, TopBar, AdminLayout)
+  - **`/bookings`** - Booking components (BookingForm, TimeSlotManager, AvailabilityChecker)
+  - **`/facilities`** - Facility components (FacilityForm, FacilityCard)
+  - **`/calendar`** - Calendar components (BookingCalendar, DatePicker)
+  - **`/charts`** - Chart components (AreaChart, BarChart, MetricCard, PieChart)
+  - **`/analytics`** - Analytics components (AnalyticsDashboard)
+- **Rules**:
+  - Components should be generic and reusable
+  - Include proper TypeScript interfaces for props
+  - Use index.tsx for clean exports where beneficial
+  - Avoid business logic - keep components presentation-focused
+
+#### `/src/pages` - Route Components
+
+- **Purpose**: Top-level components that represent application routes
+- **Structure**:
+  - **`/auth`** - LoginPage, UnifiedLoginPage
+  - **`/dashboard`** - DashboardPage (main admin dashboard)
+  - **`/bookings`** - BookingsPage, BookingsPageEnhanced
+  - **`/facilities`** - FacilitiesPage (facility management)
+  - **`/customer`** - Customer portal pages (CustomerDashboardPage, CustomerBookingsPage, etc.)
+  - **`/users`** - UsersPage (user management)
+  - **`/reports`** - ReportsPage (analytics and reporting)
+  - **`/settings`** - SettingsPage (application configuration)
+- **Rules**:
+  - One page component per file
+  - Use PascalCase with "Page" suffix
+  - Pages should orchestrate components, not contain complex UI logic
+  - Handle route-specific data fetching and state management
+
+#### `/src/features` - Feature-Specific Logic
+
+- **Purpose**: Organize code by business domain/feature
+- **Structure**:
+  - Each feature folder contains its own components, hooks, and utilities
+  - Example: `/booking-system`, `/user-management`, `/facility-management`
+- **Rules**:
+  - Keep features self-contained
+  - Can have their own components, hooks, and utilities
+  - Business logic should live here, not in shared components
+  - Features can import from shared components but not from other features
+
+#### `/src/hooks` - Custom React Hooks
+
+- **Purpose**: Reusable logic that can be shared across components
+- **Contents**:
+  - API integration hooks (`useAuth`, `useBookings`, `useFacilities`)
+  - Form handling hooks (`useBookingForm`, `useUserForm`)
+  - Business logic hooks (`useTimeSlots`, `useAvailability`)
+- **Rules**:
+  - Always start with "use" prefix
+  - Return objects for multiple values, not arrays
+  - Keep hooks focused on single responsibility
+  - Include proper TypeScript return types
+
+#### `/src/lib` - Utilities and Configurations
+
+- **Purpose**: Shared utilities, types, and configuration
+- **Structure**:
+  - **`/types`** - TypeScript definitions organized by domain
+    - `auth.ts` - User, LoginCredentials, AuthState types
+    - `booking.ts` - Booking, TimeSlot, Availability types
+    - `facility.ts` - Facility, Room, Equipment types
+    - `user.ts` - UserProfile, UserRole, UserPermissions types
+    - `analytics.ts` - AnalyticsData, MetricCard, ChartData types
+  - **`utils.ts`** - General utility functions (formatDate, cn, etc.)
+- **Rules**:
+  - Keep types organized by domain
+  - Use descriptive type names
+  - Export types for reuse across the application
+  - Utility functions should be pure and well-tested
+
+#### `/src/store` - State Management
+
+- **Purpose**: Zustand stores for global state management
+- **Structure**:
+  - `authStore.ts` - Authentication state and actions
+  - `bookingStore.ts` - Booking system state and actions
+  - `facilityStore.ts` - Facility management state and actions
+  - `userStore.ts` - User management state and actions
+  - `analyticsStore.ts` - Analytics dashboard state and actions
+- **Rules**:
+  - One store per domain/feature area
+  - Use TypeScript interfaces for store state
+  - Keep stores focused and avoid massive monolithic stores
+  - Include both state and actions in the same store
+  - Use selectors for derived state
+
+#### `/src/router` - Routing Configuration
+
+- **Purpose**: Application routing setup and configuration
+- **Contents**:
+  - `index.tsx` - Main router configuration with routes definition
+  - Route guards and navigation logic
+- **Rules**:
+  - Centralize all routing configuration
+  - Use lazy loading for code splitting
+  - Implement proper route protection
+  - Keep route definitions clean and organized
+
+#### `/src/mocks` - API Mocking (MSW)
+
+- **Purpose**: Mock API responses for development and testing
+- **Structure**:
+  - `browser.ts` - MSW browser setup and configuration
+  - `handlers.ts` - API endpoint mock handlers
+- **Rules**:
+  - Use realistic mock data that matches production API
+  - Include proper TypeScript types for mock responses
+  - Organize handlers by feature/domain
+  - Keep mock data up-to-date with API changes
+
+#### `/src/assets` - Static Assets
+
+- **Purpose**: Images, icons, and other assets imported into components
+- **Contents**:
+  - Component-specific images
+  - SVG icons and illustrations
+  - Fonts (if not using CDN)
+- **Rules**:
+  - Use descriptive filenames
+  - Optimize images for web (WebP, proper sizing)
+  - Prefer SVG for icons and simple graphics
+  - Consider using icon libraries (Lucide) over custom SVGs
+
+### File Organization Best Practices
+
+#### Index Files
+
+- Use `index.tsx` for clean re-exports from directories
+- Example: `/components/charts/index.tsx` exports all chart components
+- Avoid deep import paths when possible
+
+#### Component Co-location
+
+- Keep related files close together
+- Example: `Button.tsx`, `Button.test.tsx`, `Button.stories.tsx`
+- Consider component-specific styles if needed
+
+#### Barrel Exports
+
+- Use barrel exports for commonly imported modules
+- Group related exports in index files
+- Avoid circular dependencies
+
+### Folder Structure Rules & Best Practices
+
+#### 1. Domain-Driven Organization
+
+- Organize by feature/domain first, then by technical concern
+- Example: `/customer/components`, `/customer/hooks`, `/customer/types`
+- Avoid organizing solely by technical layer (all components together)
+
+#### 2. Dependency Direction
+
+- Components can import from lib, hooks, store
+- Pages can import from components, hooks, store
+- Features can import from shared components but not from other features
+- Stores should not import from components or pages
+
+#### 3. File Naming Patterns
+
+```
+# Component files
+ComponentName.tsx          # Main component
+ComponentName.test.tsx     # Component tests
+ComponentName.stories.tsx  # Storybook stories (if applicable)
+
+# Hook files
+useHookName.ts            # Custom hook
+useHookName.test.ts       # Hook tests
+
+# Store files
+featureStore.ts           # Zustand store
+featureStore.test.ts      # Store tests
+
+# Type files
+featureTypes.ts           # TypeScript definitions
+```
+
+#### 4. Import Path Hierarchy
+
+```typescript
+// 1. React and React ecosystem
+import React from "react";
+import { useState, useEffect } from "react";
+
+// 2. Third-party libraries
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// 3. Internal imports (using @/ alias)
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { authStore } from "@/store/authStore";
+
+// 4. Relative imports (when necessary)
+import "./ComponentName.css";
+
+// 5. Type-only imports (last)
+import type { User } from "@/lib/types/user";
+```
+
+#### 5. Folder Depth Guidelines
+
+- Maximum 3-4 levels deep for optimal navigation
+- Use index files to reduce import path length
+- Avoid overly nested structures that make imports difficult
+
+#### 6. Feature Boundary Rules
+
+- Customer portal features in `/customer`
+- Admin features in root or admin-specific folders
+- Shared components stay in `/components`
+- Feature-specific components go in `/features/{feature-name}/components`
+
+#### 7. Asset Organization
+
+```
+/assets
+├── images/
+│   ├── logos/           # Brand logos and marks
+│   ├── illustrations/   # Custom illustrations
+│   └── backgrounds/     # Background images
+├── icons/              # Custom SVG icons (prefer Lucide)
+└── fonts/              # Custom fonts (if not using CDN)
+```
+
+#### 8. Documentation Structure
+
+```
+/docs
+├── api/                # API documentation
+├── components/         # Component documentation
+├── deployment/         # Deployment guides
+├── development/        # Development setup and guides
+└── user/              # User guides and manuals
+```
+
+## Naming Conventions
+
+### Files and Directories
+
+- **Components**: PascalCase (e.g., `BookingForm.tsx`, `UserProfile.tsx`)
+- **Hooks**: camelCase starting with "use" (e.g., `useBookings.ts`, `useAuth.ts`)
+- **Utilities**: camelCase (e.g., `formatDate.ts`, `apiClient.ts`)
+- **Stores**: camelCase ending with "Store" (e.g., `authStore.ts`, `bookingStore.ts`)
+- **Types**: PascalCase (e.g., `User.ts`, `Booking.ts`, `Facility.ts`)
+- **Pages**: PascalCase ending with "Page" (e.g., `DashboardPage.tsx`, `LoginPage.tsx`)
+
+### Component Structure
+
+```typescript
+// Preferred component structure
+interface ComponentProps {
+  // Props definition
+}
+
+export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
+  // Hooks at the top
+  // Event handlers
+  // Render logic
+
+  return (
+    // JSX
+  );
+};
+
+export default ComponentName;
+```
+
+## Import/Export Conventions
+
+### Import Order
+
+1. React and React-related imports
+2. Third-party library imports
+3. Internal components and utilities (using `@/` alias)
+4. Type-only imports (with `type` keyword)
+
+```typescript
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+
+import type { User } from "@/lib/types/user";
+```
+
+### Export Patterns
+
+- **Default exports** for pages and main components
+- **Named exports** for utilities, hooks, and secondary components
+- **Index files** for clean re-exports from directories
+
+## TypeScript Guidelines
+
+### Type Definitions
+
+- Define types in `/lib/types/` organized by domain
+- Use interfaces for object shapes
+- Use types for unions, primitives, and computed types
+- Export types for reuse across the application
+
+### Strict TypeScript
+
+- Enable strict mode in TypeScript configuration
+- Avoid `any` type - use `unknown` or proper typing
+- Use type guards and assertion functions when needed
+- Leverage TypeScript's utility types (Partial, Pick, Omit, etc.)
+
+## Styling Guidelines
+
+### Tailwind CSS
+
+- Use Tailwind utilities for all styling
+- Create component variants using `class-variance-authority`
+- Use CSS variables for theming (defined in `src/index.css`)
+- Follow mobile-first responsive design principles
+
+### shadcn/ui Integration
+
+- Extend shadcn/ui components rather than modifying them directly
+- Use the established design tokens and CSS variables
+- Maintain consistency with the component library's patterns
+
+## State Management Rules
+
+### Zustand Stores
+
+- Keep stores small and focused on specific domains
+- Use TypeScript interfaces for store state
+- Implement actions as methods within the store
+- Use selectors for derived state
+
+```typescript
+interface AuthStore {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthStore>((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  login: async (credentials) => {
+    // Implementation
+  },
+  logout: () => {
+    set({ user: null, isAuthenticated: false });
+  },
+}));
+```
+
+## Form Handling Standards
+
+### React Hook Form + Zod
+
+- Always use React Hook Form for form state management
+- Define Zod schemas for validation
+- Use `@hookform/resolvers/zod` for integration
+- Implement proper error handling and user feedback
+
+```typescript
+const formSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const form = useForm<FormData>({
+  resolver: zodResolver(formSchema),
+});
+```
+
+## API Integration
+
+### Mock Service Worker (MSW)
+
+- Use MSW for API mocking during development
+- Define handlers in `/mocks/handlers.ts`
+- Keep mock data realistic and comprehensive
+- Use TypeScript for type-safe mock responses
+
+## Performance Guidelines
+
+### Code Splitting
+
+- Use React.lazy() for route-based code splitting
+- Implement loading states for async components
+- Consider component-level code splitting for large features
+
+### Optimization
+
+- Use React.memo() for expensive re-renders
+- Implement proper dependency arrays in hooks
+- Avoid inline object/function creation in render methods
+- Use useMemo() and useCallback() judiciously
+
+## Testing Considerations
+
+### File Organization
+
+- Co-locate tests with components when possible
+- Use `.test.tsx` or `.spec.tsx` extensions
+- Create test utilities in `/src/test-utils/`
+
+## Accessibility (A11Y)
+
+### Standards
+
+- Use semantic HTML elements
+- Implement proper ARIA attributes
+- Ensure keyboard navigation works
+- Maintain sufficient color contrast
+- Test with screen readers
+
+## Documentation
+
+### Code Documentation
+
+- Use JSDoc for complex functions and components
+- Document prop interfaces thoroughly
+- Include usage examples for reusable components
+- Maintain up-to-date README files
+
+## Git and Development Workflow
+
+### Branch Naming
+
+- `feature/` - New features
+- `bugfix/` - Bug fixes
+- `hotfix/` - Critical fixes
+- `refactor/` - Code refactoring
+
+### Commit Messages
+
+- Use conventional commit format
+- Be descriptive and specific
+- Reference issue numbers when applicable
+
+## Security Guidelines
+
+### Authentication
+
+- Never store sensitive data in localStorage
+- Use secure HTTP-only cookies when possible
+- Implement proper token refresh mechanisms
+- Validate all user inputs
+
+### Environment Variables
+
+- Use environment variables for configuration
+- Never commit secrets to version control
+- Implement proper environment-based configurations
+
+---
+
+**Note**: This ruleset should be followed consistently across the entire project to maintain code quality, readability, and maintainability. When in doubt, refer to these guidelines or ask for clarification.

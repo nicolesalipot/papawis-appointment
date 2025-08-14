@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, UserFilters, UserFormData, UserInvitation, UserStats, PaginationInfo } from '@/lib/types/user';
+import { User, UserFilters, UserFormData, UserInvitation, UserStats, PaginationInfo } from '../lib/types/user';
 
 interface UserStore {
   // State
@@ -27,7 +27,7 @@ interface UserStore {
   fetchUserStats: () => Promise<void>;
   fetchInvitations: () => Promise<void>;
   createUser: (data: UserFormData) => Promise<User>;
-  updateUser: (id: string, data: Partial<UserFormData>) => Promise<User>;
+  updateUser: (id: string, data: Partial<UserFormData> | Partial<User>) => Promise<User>;
   deleteUser: (id: string) => Promise<void>;
   getUserById: (id: string) => Promise<User>;
 
@@ -63,6 +63,411 @@ const defaultPagination: PaginationInfo = {
   totalPages: 0,
 };
 
+// Sample user data generator
+const getSampleUsers = (): User[] => [
+  // Super Admins
+  {
+    id: 'user-001',
+    email: 'admin@facility.com',
+    firstName: 'System',
+    lastName: 'Administrator',
+    role: 'super_admin',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 000-0001',
+    dateOfBirth: '1985-03-15',
+    address: '123 Admin Street, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-01-01T08:00:00Z',
+    updatedAt: new Date().toISOString(),
+    createdBy: 'system',
+    updatedBy: 'user-001',
+    permissions: ['*'],
+  },
+  {
+    id: 'user-002',
+    email: 'sarah.admin@facility.com',
+    firstName: 'Sarah',
+    lastName: 'Connor',
+    role: 'super_admin',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9349186?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 000-0002',
+    dateOfBirth: '1980-07-22',
+    address: '456 Management Ave, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: new Date().toISOString(),
+    createdBy: 'user-001',
+    updatedBy: 'user-002',
+    permissions: ['*'],
+  },
+  // Facility Managers
+  {
+    id: 'user-003',
+    email: 'john.manager@facility.com',
+    firstName: 'John',
+    lastName: 'Manager',
+    role: 'facility_manager',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 111-0001',
+    dateOfBirth: '1988-11-03',
+    address: '789 Facility Road, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-02-01T09:00:00Z',
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-001',
+    updatedBy: 'user-003',
+    assignedFacilities: ['facility-1', 'facility-2'],
+    permissions: ['facilities.manage', 'bookings.manage', 'users.view'],
+  },
+  {
+    id: 'user-004',
+    email: 'emily.sports@facility.com',
+    firstName: 'Emily',
+    lastName: 'Rodriguez',
+    role: 'facility_manager',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 111-0002',
+    dateOfBirth: '1992-05-18',
+    address: '321 Sports Complex Dr, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-02-15T14:20:00Z',
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-001',
+    updatedBy: 'user-004',
+    assignedFacilities: ['facility-3', 'facility-4'],
+    permissions: ['facilities.manage', 'bookings.manage', 'users.view'],
+  },
+  {
+    id: 'user-005',
+    email: 'mike.events@facility.com',
+    firstName: 'Michael',
+    lastName: 'Chen',
+    role: 'facility_manager',
+    status: 'inactive',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 111-0003',
+    dateOfBirth: '1987-09-12',
+    address: '654 Event Plaza, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-03-01T11:45:00Z',
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-002',
+    updatedBy: 'user-002',
+    assignedFacilities: ['facility-5'],
+    permissions: ['facilities.manage', 'bookings.manage', 'users.view'],
+  },
+  // Members - Active Users
+  {
+    id: 'customer-001',
+    email: 'john.smith@example.com',
+    firstName: 'John',
+    lastName: 'Smith',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 123-4567',
+    dateOfBirth: '1990-06-15',
+    address: '123 Member Street, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-03-15T16:30:00Z',
+    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-003',
+    updatedBy: 'customer-001',
+    membershipTier: 'premium',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-002',
+    email: 'sarah.johnson@example.com',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 234-5678',
+    dateOfBirth: '1993-04-22',
+    address: '456 Fitness Ave, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-04-01T09:15:00Z',
+    updatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-003',
+    updatedBy: 'customer-002',
+    membershipTier: 'premium',
+    emergencyContact: 'Jane Johnson - +1 (555) 234-5679',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-003',
+    email: 'michael.brown@example.com',
+    firstName: 'Michael',
+    lastName: 'Brown',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1553267751-1c148a7280a1?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 345-6789',
+    dateOfBirth: '1985-12-08',
+    address: '789 Business Blvd, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-04-10T13:20:00Z',
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-003',
+    membershipTier: 'basic',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-004',
+    email: 'emma.davis@example.com',
+    firstName: 'Emma',
+    lastName: 'Davis',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 456-7890',
+    dateOfBirth: '1991-08-30',
+    address: '321 Swimming Lane, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-04-20T11:45:00Z',
+    updatedAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-004',
+    membershipTier: 'basic',
+    emergencyContact: 'Robert Davis - +1 (555) 456-7891',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-005',
+    email: 'robert.wilson@example.com',
+    firstName: 'Robert',
+    lastName: 'Wilson',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 567-8901',
+    dateOfBirth: '1982-02-14',
+    address: '654 Tennis Court Dr, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-05-01T15:30:00Z',
+    updatedAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-005',
+    membershipTier: 'vip',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  // More Members with Different Statuses
+  {
+    id: 'customer-006',
+    email: 'lisa.martinez@example.com',
+    firstName: 'Lisa',
+    lastName: 'Martinez',
+    role: 'member',
+    status: 'pending',
+    avatar: 'https://images.unsplash.com/photo-1464746133101-a2c3f88e0dd9?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 678-9012',
+    dateOfBirth: '1989-10-25',
+    address: '987 Auditorium St, City, State 12345',
+    emailVerified: false,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'customer-006',
+    updatedBy: 'customer-006',
+    membershipTier: 'basic',
+    permissions: ['profile.manage'],
+  },
+  {
+    id: 'customer-007',
+    email: 'david.lee@example.com',
+    firstName: 'David',
+    lastName: 'Lee',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 789-0123',
+    dateOfBirth: '1994-07-12',
+    address: '147 HIIT Street, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-05-15T12:15:00Z',
+    updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-007',
+    membershipTier: 'premium',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-008',
+    email: 'jennifer.taylor@example.com',
+    firstName: 'Jennifer',
+    lastName: 'Taylor',
+    role: 'member',
+    status: 'suspended',
+    avatar: 'https://images.unsplash.com/photo-1485893086445-ed75865251e0?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 890-1234',
+    dateOfBirth: '1986-01-19',
+    address: '258 Board Room Ave, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-03-20T08:45:00Z',
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-003',
+    updatedBy: 'user-002',
+    membershipTier: 'vip',
+    permissions: [],
+  },
+  {
+    id: 'customer-009',
+    email: 'carlos.rodriguez@example.com',
+    firstName: 'Carlos',
+    lastName: 'Rodriguez',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 901-2345',
+    dateOfBirth: '1975-11-03',
+    address: '369 Aqua Lane, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-02-28T14:20:00Z',
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-009',
+    membershipTier: 'basic',
+    emergencyContact: 'Maria Rodriguez - +1 (555) 901-2346',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-010',
+    email: 'amanda.white@example.com',
+    firstName: 'Amanda',
+    lastName: 'White',
+    role: 'member',
+    status: 'inactive',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 012-3456',
+    dateOfBirth: '1983-05-27',
+    address: '741 Tennis Academy Rd, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-01-20T10:00:00Z',
+    updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'user-004',
+    membershipTier: 'premium',
+    permissions: ['profile.manage'],
+  },
+  // Additional Recent Members
+  {
+    id: 'customer-011',
+    email: 'kevin.park@example.com',
+    firstName: 'Kevin',
+    lastName: 'Park',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 123-0987',
+    dateOfBirth: '1996-03-08',
+    address: '852 Dance Studio St, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-06-01T17:30:00Z',
+    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-003',
+    updatedBy: 'customer-011',
+    membershipTier: 'basic',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-012',
+    email: 'alex.thompson@example.com',
+    firstName: 'Alex',
+    lastName: 'Thompson',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 234-0987',
+    dateOfBirth: '1987-09-14',
+    address: '963 Strategy Blvd, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    createdAt: '2024-06-10T09:45:00Z',
+    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-003',
+    updatedBy: 'customer-012',
+    membershipTier: 'vip',
+    emergencyContact: 'Jordan Thompson - +1 (555) 234-0988',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  {
+    id: 'customer-013',
+    email: 'maria.gonzalez@example.com',
+    firstName: 'Maria',
+    lastName: 'Gonzalez',
+    role: 'member',
+    status: 'active',
+    avatar: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop&crop=face',
+    phone: '+1 (555) 345-0987',
+    dateOfBirth: '1992-12-02',
+    address: '159 Pilates Plaza, City, State 12345',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    createdAt: '2024-06-15T13:00:00Z',
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-004',
+    updatedBy: 'customer-013',
+    membershipTier: 'premium',
+    permissions: ['bookings.create', 'bookings.manage_own', 'profile.manage'],
+  },
+  // Maintenance and Service Accounts
+  {
+    id: 'maintenance-001',
+    email: 'maintenance@facility.com',
+    firstName: 'Maintenance',
+    lastName: 'Team',
+    role: 'member',
+    status: 'active',
+    phone: '+1 (555) 000-1000',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-01-01T08:00:00Z',
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-001',
+    updatedBy: 'user-001',
+    membershipTier: 'basic',
+    permissions: ['bookings.create', 'facilities.access'],
+  },
+  {
+    id: 'admin-001',
+    email: 'facilities@facility.com',
+    firstName: 'Facility',
+    lastName: 'Admin',
+    role: 'facility_manager',
+    status: 'active',
+    phone: '+1 (555) 000-2000',
+    emailVerified: true,
+    lastLoginAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2024-01-01T08:00:00Z',
+    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    createdBy: 'user-001',
+    updatedBy: 'user-001',
+    assignedFacilities: ['facility-1', 'facility-2', 'facility-3', 'facility-4', 'facility-5'],
+    permissions: ['facilities.manage', 'bookings.manage', 'maintenance.schedule'],
+  }
+];
+
 export const useUserStore = create<UserStore>((set, get) => ({
   // Initial state
   users: [],
@@ -95,38 +500,52 @@ export const useUserStore = create<UserStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // Build query parameters
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        pageSize: pagination.pageSize.toString(),
-        ...(filters.search && { search: filters.search }),
-        ...(filters.role && filters.role !== 'all' && { role: filters.role }),
-        ...(filters.status && filters.status !== 'all' && { status: filters.status }),
-        ...(filters.facility && { facility: filters.facility }),
-        ...(filters.membershipTier && filters.membershipTier !== 'all' && { membershipTier: filters.membershipTier }),
+      // Generate sample user data for demonstration
+      const sampleUsers = getSampleUsers();
+
+      // Apply filters
+      let filteredUsers = sampleUsers.filter(user => {
+        const searchMatch = !filters.search ||
+          user.firstName.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.lastName.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.phone?.toLowerCase().includes(filters.search.toLowerCase());
+
+        const roleMatch = !filters.role || filters.role === 'all' || user.role === filters.role;
+        const statusMatch = !filters.status || filters.status === 'all' || user.status === filters.status;
+        const membershipMatch = !filters.membershipTier ||
+          filters.membershipTier === 'all' ||
+          user.membershipTier === filters.membershipTier ||
+          (user.role !== 'member'); // Non-members always match membership filter
+
+        const facilityMatch = !filters.facility ||
+          (user.assignedFacilities?.includes(filters.facility)) ||
+          (user.role === 'member'); // Members don't have assigned facilities, so they match all facility filters
+
+        return searchMatch && roleMatch && statusMatch && membershipMatch && facilityMatch;
       });
 
-      const response = await fetch(`/api/users?${params}`);
+      // Sort by creation date (newest first)
+      filteredUsers.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      // Check if response is actually JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Non-JSON response received:', text);
-        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-      }
+      // Apply pagination
+      const startIndex = (pagination.page - 1) * pagination.pageSize;
+      const paginatedUsers = filteredUsers.slice(startIndex, startIndex + pagination.pageSize);
+      const paginationInfo = {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        total: filteredUsers.length,
+        totalPages: Math.ceil(filteredUsers.length / pagination.pageSize),
+      };
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch users');
-      }
-
-      set({
-        users: data.users,
-        pagination: data.pagination,
-        isLoading: false,
-      });
+      // Simulate loading delay
+      setTimeout(() => {
+        set({
+          users: paginatedUsers,
+          pagination: paginationInfo,
+          isLoading: false,
+        });
+      }, 300);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'An error occurred',
@@ -137,14 +556,25 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   fetchUserStats: async () => {
     try {
-      const response = await fetch('/api/users/stats');
-      const stats = await response.json();
+      // Generate sample user stats for demonstration
+      const sampleStats: UserStats = {
+        total: 17,
+        active: 12,
+        inactive: 2,
+        pending: 1,
+        byRole: {
+          super_admin: 2,
+          facility_manager: 4,
+          member: 11,
+        },
+        recentSignups: 5, // Last 30 days
+        activeToday: 8,
+      };
 
-      if (!response.ok) {
-        throw new Error(stats.error || 'Failed to fetch user stats');
-      }
-
-      set({ stats });
+      // Simulate loading delay
+      setTimeout(() => {
+        set({ stats: sampleStats });
+      }, 200);
     } catch (error) {
       console.error('Failed to fetch user stats:', error);
     }
@@ -197,7 +627,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     }
   },
 
-  updateUser: async (id, data) => {
+  updateUser: async (id, data: Partial<UserFormData> | Partial<User>) => {
     set({ isLoading: true, error: null });
 
     try {

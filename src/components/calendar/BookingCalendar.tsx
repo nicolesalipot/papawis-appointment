@@ -19,6 +19,10 @@ import {
   BOOKING_TYPE_CONFIG,
 } from "@/lib/types/booking";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BookingCalendarProps {
   onBookingClick?: (booking: Booking) => void;
@@ -442,119 +446,118 @@ export function BookingCalendar({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <Card className="overflow-hidden">
       {/* Calendar Header */}
-      <div className="px-6 py-4 border-b border-slate-200">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h3 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-foreground">
               {formatViewTitle()}
             </h3>
             <div className="flex items-center gap-1">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => navigateCalendar("prev")}
-                className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded"
+                className="h-8 w-8"
               >
                 <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => navigateCalendar("next")}
-                className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded"
+                className="h-8 w-8"
               >
                 <ChevronRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {/* View Selector */}
-            <div className="flex items-center bg-slate-100 rounded-lg p-1">
-              <button
+            <div className="flex items-center bg-muted rounded-lg p-1">
+              <Button
                 onClick={() => handleViewChange("month")}
-                className={cn(
-                  "px-3 py-1 text-sm rounded-md transition-colors flex items-center gap-1",
-                  calendarView.view === "month"
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                )}
+                variant={calendarView.view === "month" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-8 px-3 text-sm"
               >
-                <Grid3x3 className="h-3 w-3" />
+                <Grid3x3 className="h-3 w-3 mr-1" />
                 Month
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleViewChange("week")}
-                className={cn(
-                  "px-3 py-1 text-sm rounded-md transition-colors flex items-center gap-1",
-                  calendarView.view === "week"
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                )}
+                variant={calendarView.view === "week" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-8 px-3 text-sm"
               >
-                <CalendarDays className="h-3 w-3" />
+                <CalendarDays className="h-3 w-3 mr-1" />
                 Week
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleViewChange("day")}
-                className={cn(
-                  "px-3 py-1 text-sm rounded-md transition-colors flex items-center gap-1",
-                  calendarView.view === "day"
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                )}
+                variant={calendarView.view === "day" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-8 px-3 text-sm"
               >
-                <Calendar1 className="h-3 w-3" />
+                <Calendar1 className="h-3 w-3 mr-1" />
                 Day
-              </button>
+              </Button>
             </div>
 
             {/* Today Button */}
-            <button
+            <Button
               onClick={() => setCalendarView({ currentDate: new Date() })}
-              className="px-3 py-1 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              variant="outline"
+              size="sm"
+              className="h-8"
             >
               Today
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Facility Filters */}
         {facilities.length > 0 && (
           <div className="flex items-center gap-2 mt-4">
-            <Filter className="h-4 w-4 text-slate-500" />
-            <span className="text-sm text-slate-600">Facilities:</span>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Facilities:</span>
             <div className="flex flex-wrap gap-2">
               {facilities.map((facility) => (
-                <button
+                <Badge
                   key={facility.id}
-                  onClick={() => handleFacilityFilter(facility.id)}
-                  className={cn(
-                    "px-2 py-1 text-xs rounded-full transition-colors",
+                  variant={
                     calendarView.selectedFacilities.includes(facility.id)
-                      ? "bg-blue-100 text-blue-800 border border-blue-200"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  )}
+                      ? "default"
+                      : "secondary"
+                  }
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => handleFacilityFilter(facility.id)}
                 >
                   {facility.name}
-                </button>
+                </Badge>
               ))}
               {calendarView.selectedFacilities.length > 0 && (
-                <button
+                <Button
                   onClick={() => setCalendarView({ selectedFacilities: [] })}
-                  className="px-2 py-1 text-xs text-slate-500 hover:text-slate-700"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
                 >
                   Clear
-                </button>
+                </Button>
               )}
             </div>
           </div>
         )}
-      </div>
+      </CardHeader>
 
       {/* Calendar Content */}
-      <div className="p-6">
+      <CardContent className="p-6">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
         ) : (
           <div>
@@ -563,7 +566,7 @@ export function BookingCalendar({
             {calendarView.view === "day" && renderDayView()}
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

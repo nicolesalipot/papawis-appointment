@@ -10,6 +10,10 @@ export interface Facility {
   status: FacilityStatus;
   amenities: string[];
   pricePerHour?: number;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
   createdBy: string;
   updatedBy: string;
   createdAt: string;

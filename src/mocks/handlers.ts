@@ -16,6 +16,17 @@ const mockAuthUser: AuthUser = {
   updatedAt: new Date().toISOString(),
 };
 
+const mockCustomerUser: AuthUser = {
+  id: 'customer-1',
+  email: 'customer@demo.com',
+  role: 'member',
+  firstName: 'John',
+  lastName: 'Doe',
+  status: 'active',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 // Mock facilities data
 let mockFacilities: Facility[] = [
   {
@@ -363,6 +374,87 @@ const nextWeek = new Date(today);
 nextWeek.setDate(today.getDate() + 7);
 
 let mockBookings: Booking[] = [
+  // Customer bookings for test customer account
+  {
+    id: 'booking-customer-1',
+    facilityId: 'facility-1',
+    facilityName: 'Tennis Court A',
+    customerId: 'customer-1',
+    customerName: 'John Doe',
+    customerEmail: 'customer@demo.com',
+    customerPhone: '+1-555-0101',
+    title: 'Tennis Practice',
+    description: 'Regular tennis practice session',
+    startTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 10, 0).toISOString(),
+    endTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 11, 0).toISOString(),
+    duration: 60,
+    participants: 2,
+    status: 'confirmed',
+    type: 'regular',
+    pricePerHour: 25,
+    totalAmount: 25,
+    paymentStatus: 'paid',
+    isRecurring: false,
+    notes: 'Regular practice session',
+    source: 'customer',
+    createdBy: 'customer-1',
+    updatedBy: 'customer-1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'booking-customer-2',
+    facilityId: 'facility-2',
+    facilityName: 'Basketball Court',
+    customerId: 'customer-1',
+    customerName: 'John Doe',
+    customerEmail: 'customer@demo.com',
+    customerPhone: '+1-555-0101',
+    title: 'Basketball Training',
+    description: 'Individual basketball training',
+    startTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3, 16, 0).toISOString(),
+    endTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3, 17, 0).toISOString(),
+    duration: 60,
+    participants: 1,
+    status: 'pending',
+    type: 'regular',
+    pricePerHour: 30,
+    totalAmount: 30,
+    paymentStatus: 'pending',
+    isRecurring: false,
+    specialRequests: 'Need access to basketballs',
+    source: 'customer',
+    createdBy: 'customer-1',
+    updatedBy: 'customer-1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'booking-customer-3',
+    facilityId: 'facility-3',
+    facilityName: 'Swimming Pool',
+    customerId: 'customer-1',
+    customerName: 'John Doe',
+    customerEmail: 'customer@demo.com',
+    customerPhone: '+1-555-0101',
+    title: 'Swimming Session',
+    description: 'Lap swimming',
+    startTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2, 8, 0).toISOString(),
+    endTime: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2, 9, 0).toISOString(),
+    duration: 60,
+    participants: 1,
+    status: 'completed',
+    type: 'regular',
+    pricePerHour: 20,
+    totalAmount: 20,
+    paymentStatus: 'paid',
+    isRecurring: false,
+    source: 'customer',
+    createdBy: 'customer-1',
+    updatedBy: 'customer-1',
+    createdAt: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
   {
     id: 'booking-1',
     facilityId: 'facility-1',
@@ -728,16 +820,30 @@ const generateTimeSlots = (facilityId: string, date: string): TimeSlot[] => {
 };
 
 export const handlers = [
+  // Test endpoint
+  http.get('/api/test', () => {
+    return HttpResponse.json({ message: 'MSW is working!' });
+  }),
+
   // Auth endpoints
   http.post('/api/auth/login', async ({ request }) => {
     const body = await request.json() as { email: string; password: string };
 
-    // Mock validation
+    // Mock validation for admin
     if (body.email === 'admin@demo.com' && body.password === 'password123') {
       return HttpResponse.json({
         user: mockAuthUser,
         token: 'mock-jwt-token',
         refreshToken: 'mock-refresh-token',
+      });
+    }
+
+    // Mock validation for customer
+    if (body.email === 'customer@demo.com' && body.password === 'password123') {
+      return HttpResponse.json({
+        user: mockCustomerUser,
+        token: 'mock-customer-jwt-token',
+        refreshToken: 'mock-customer-refresh-token',
       });
     }
 
@@ -754,6 +860,10 @@ export const handlers = [
   http.get('/api/auth/me', ({ request }) => {
     const authorization = request.headers.get('Authorization');
 
+    if (authorization?.includes('mock-customer-jwt-token')) {
+      return HttpResponse.json({ user: mockCustomerUser });
+    }
+
     if (authorization?.includes('mock-jwt-token')) {
       return HttpResponse.json({ user: mockAuthUser });
     }
@@ -762,6 +872,69 @@ export const handlers = [
       { error: 'Unauthorized' },
       { status: 401 }
     );
+  }),
+
+  // Registration endpoint
+  http.post('/api/auth/register', async ({ request }) => {
+    const body = await request.json() as {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      password: string;
+      role: 'customer' | 'member';
+    };
+
+    // Mock registration - in a real app, this would validate and save to database
+    const newUser: AuthUser = {
+      id: `user-${Date.now()}`,
+      email: body.email,
+      role: body.role === 'customer' ? 'member' : body.role,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      phone: body.phone,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json({
+      user: newUser,
+      token: `mock-${body.role}-jwt-token`,
+      refreshToken: `mock-${body.role}-refresh-token`,
+    });
+  }),
+
+  // Profile update endpoint
+  http.put('/api/auth/profile', async ({ request }) => {
+    const authorization = request.headers.get('Authorization');
+    const body = await request.json() as Partial<AuthUser>;
+
+    if (!authorization) {
+      return HttpResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Mock profile update - in a real app, this would update the database
+    let updatedUser: AuthUser;
+
+    if (authorization.includes('mock-customer-jwt-token')) {
+      updatedUser = { ...mockCustomerUser, ...body, updatedAt: new Date().toISOString() };
+      // Update the mock user for future requests
+      Object.assign(mockCustomerUser, updatedUser);
+    } else if (authorization.includes('mock-jwt-token')) {
+      updatedUser = { ...mockAuthUser, ...body, updatedAt: new Date().toISOString() };
+      Object.assign(mockAuthUser, updatedUser);
+    } else {
+      return HttpResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    return HttpResponse.json({ user: updatedUser });
   }),
 
     // Facilities endpoints
@@ -1496,5 +1669,311 @@ export const handlers = [
 
     const timeSlots = generateTimeSlots(params.facilityId as string, date!);
     return HttpResponse.json(timeSlots);
+  }),
+
+  // Analytics endpoints
+  http.get('/api/analytics/bookings', ({ request }) => {
+    console.log('🎯 MSW: Intercepted GET /api/analytics/bookings');
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    // Filter bookings by date range
+    const filteredBookings = mockBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= new Date(startDate!) && bookingDate <= new Date(endDate!);
+    });
+
+    const totalBookings = filteredBookings.length;
+    const confirmedBookings = filteredBookings.filter(b => b.status === 'confirmed').length;
+    const cancelledBookings = filteredBookings.filter(b => b.status === 'cancelled').length;
+    const completedBookings = filteredBookings.filter(b => b.status === 'completed').length;
+    const pendingBookings = filteredBookings.filter(b => b.status === 'pending').length;
+    const noShowBookings = filteredBookings.filter(b => b.status === 'no_show').length;
+
+    const totalRevenue = filteredBookings
+      .filter(b => b.status !== 'cancelled')
+      .reduce((sum, booking) => sum + booking.totalAmount, 0);
+
+    const analytics = {
+      totalBookings,
+      confirmedBookings,
+      cancelledBookings,
+      completedBookings,
+      pendingBookings,
+      noShowBookings,
+      totalRevenue,
+      averageBookingValue: totalBookings > 0 ? totalRevenue / totalBookings : 0,
+      conversionRate: totalBookings > 0 ? (confirmedBookings / totalBookings) * 100 : 0,
+      cancellationRate: totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0,
+      noShowRate: totalBookings > 0 ? (noShowBookings / totalBookings) * 100 : 0,
+    };
+
+    return HttpResponse.json(analytics);
+  }),
+
+  http.get('/api/analytics/revenue', ({ request }) => {
+    console.log('🎯 MSW: Intercepted GET /api/analytics/revenue');
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    // Calculate current period revenue
+    const filteredBookings = mockBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate >= new Date(startDate!) && bookingDate <= new Date(endDate!) && booking.status !== 'cancelled';
+    });
+
+    const totalRevenue = filteredBookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
+
+    // Calculate monthly revenue
+    const monthlyBookings = mockBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate.getMonth() === currentMonth &&
+             bookingDate.getFullYear() === currentYear &&
+             booking.status !== 'cancelled';
+    });
+    const monthlyRevenue = monthlyBookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
+
+    // Calculate previous month revenue
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonthBookings = mockBookings.filter(booking => {
+      const bookingDate = new Date(booking.startTime);
+      return bookingDate.getMonth() === prevMonth &&
+             bookingDate.getFullYear() === prevYear &&
+             booking.status !== 'cancelled';
+    });
+    const previousMonthRevenue = prevMonthBookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
+
+    const revenueGrowth = previousMonthRevenue > 0 ?
+      ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 : 0;
+
+    const analytics = {
+      totalRevenue,
+      monthlyRevenue,
+      yearlyRevenue: totalRevenue * 12, // Estimated
+      previousMonthRevenue,
+      revenueGrowth,
+      averageRevenuePerBooking: filteredBookings.length > 0 ? totalRevenue / filteredBookings.length : 0,
+      averageRevenuePerUser: 250, // Mock value
+      projectedMonthlyRevenue: monthlyRevenue * 1.1, // 10% growth projection
+    };
+
+    return HttpResponse.json(analytics);
+  }),
+
+  http.get('/api/analytics/revenue/trends', ({ request }) => {
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    // Generate mock revenue trends data
+    const trends = [];
+    const start = new Date(startDate!);
+    const end = new Date(endDate!);
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+    for (let i = 0; i <= daysDiff; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+
+      const dayBookings = mockBookings.filter(booking => {
+        const bookingDate = new Date(booking.startTime);
+        return bookingDate.toDateString() === date.toDateString() && booking.status !== 'cancelled';
+      });
+
+      trends.push({
+        date: date.toISOString().split('T')[0],
+        value: dayBookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+
+    return HttpResponse.json(trends);
+  }),
+
+  http.get('/api/analytics/facilities', ({ request }) => {
+    console.log('🎯 MSW: Intercepted GET /api/analytics/facilities');
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    const facilityAnalytics = mockFacilities.map(facility => {
+      const facilityBookings = mockBookings.filter(booking => {
+        const bookingDate = new Date(booking.startTime);
+        return booking.facilityId === facility.id &&
+               bookingDate >= new Date(startDate!) &&
+               bookingDate <= new Date(endDate!) &&
+               booking.status !== 'cancelled';
+      });
+
+      const totalRevenue = facilityBookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
+      const totalHours = facilityBookings.reduce((sum, booking) => sum + booking.duration, 0);
+      const operatingHours = 14 * 30; // 14 hours per day * 30 days
+      const utilizationRate = (totalHours / operatingHours) * 100;
+
+      return {
+        facilityId: facility.id,
+        facilityName: facility.name,
+        totalBookings: facilityBookings.length,
+        totalRevenue,
+        utilizationRate: Math.min(utilizationRate, 100),
+        averageBookingDuration: facilityBookings.length > 0 ? totalHours / facilityBookings.length : 0,
+        peakHours: ['09:00', '18:00', '19:00'],
+        popularDays: ['Monday', 'Wednesday', 'Friday'],
+        averageRating: 4.5 + Math.random() * 0.5,
+        capacityUtilization: Math.min((facilityBookings.length * 2) / facility.capacity * 100, 100),
+      };
+    });
+
+    return HttpResponse.json(facilityAnalytics);
+  }),
+
+  http.get('/api/analytics/users', ({ request }) => {
+    console.log('🎯 MSW: Intercepted GET /api/analytics/users');
+    const url = new URL(request.url);
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    // Mock user analytics
+    const totalUsers = mockUsers.length;
+    const activeUsers = mockUsers.filter(user => user.status === 'active').length;
+
+    const newUsersThisMonth = mockUsers.filter(user => {
+      const userDate = new Date(user.createdAt);
+      return userDate.getMonth() === currentMonth && userDate.getFullYear() === currentYear;
+    }).length;
+
+    const topCustomers = mockUsers.slice(0, 5).map(user => ({
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      totalBookings: Math.floor(Math.random() * 20) + 5,
+      totalSpent: Math.floor(Math.random() * 1000) + 200,
+      lastBookingDate: new Date().toISOString(),
+      membershipType: user.role === 'customer' ? 'Premium' : 'Basic',
+    }));
+
+    const analytics = {
+      totalUsers,
+      activeUsers,
+      newUsersThisMonth,
+      churnRate: 5.2,
+      averageBookingsPerUser: 8.5,
+      averageLifetimeValue: 425,
+      topCustomers,
+      userGrowthRate: 12.5,
+    };
+
+    return HttpResponse.json(analytics);
+  }),
+
+  http.get('/api/analytics/users/growth', ({ request }) => {
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    // Generate mock user growth data
+    const growth = [];
+    const start = new Date(startDate!);
+    const end = new Date(endDate!);
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+    let cumulativeUsers = 50;
+    for (let i = 0; i <= daysDiff; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+
+      const dailyNewUsers = Math.floor(Math.random() * 5) + 1;
+      cumulativeUsers += dailyNewUsers;
+
+      growth.push({
+        date: date.toISOString().split('T')[0],
+        value: cumulativeUsers,
+        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+
+    return HttpResponse.json(growth);
+  }),
+
+  http.get('/api/analytics/bookings/trends', ({ request }) => {
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
+
+    // Generate mock booking trends data
+    const trends = [];
+    const start = new Date(startDate!);
+    const end = new Date(endDate!);
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+    for (let i = 0; i <= daysDiff; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+
+      const dayBookings = mockBookings.filter(booking => {
+        const bookingDate = new Date(booking.startTime);
+        return bookingDate.toDateString() === date.toDateString();
+      });
+
+      trends.push({
+        date: date.toISOString().split('T')[0],
+        value: dayBookings.length,
+        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+
+    return HttpResponse.json(trends);
+  }),
+
+  http.get('/api/analytics/peak-hours', ({ request }) => {
+    const hours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
+
+    const peakHoursData = hours.map(hour => {
+      const hourBookings = mockBookings.filter(booking => {
+        const bookingHour = new Date(booking.startTime).getHours().toString().padStart(2, '0') + ':00';
+        return bookingHour === hour && booking.status !== 'cancelled';
+      });
+
+      return {
+        hour,
+        bookings: hourBookings.length,
+        revenue: hourBookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+        utilization: Math.min((hourBookings.length / 10) * 100, 100), // Assuming max 10 bookings per hour
+      };
+    });
+
+    return HttpResponse.json(peakHoursData);
+  }),
+
+  http.post('/api/analytics/export', async ({ request }) => {
+    const url = new URL(request.url);
+    const format = url.searchParams.get('format');
+    const dataType = url.searchParams.get('dataType');
+
+    // Mock CSV export
+    if (format === 'csv') {
+      const csvContent = `Date,Bookings,Revenue,Facility
+2024-01-01,5,250,Tennis Court A
+2024-01-02,8,400,Basketball Court
+2024-01-03,12,600,Swimming Pool`;
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      return new Response(blob, {
+        headers: {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename="analytics-${dataType}-${new Date().toISOString().split('T')[0]}.csv"`
+        }
+      });
+    }
+
+    return HttpResponse.json({ error: 'Export format not supported' }, { status: 400 });
   }),
 ];

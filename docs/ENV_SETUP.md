@@ -9,7 +9,7 @@ Create a `.env.local` file in the project root with the following variables:
 NODE_ENV=development
 
 # Application
-VITE_APP_NAME=SportsFacility
+VITE_APP_NAME=Papawis
 VITE_APP_VERSION=1.0.0
 
 # API Configuration (will be used in later phases)

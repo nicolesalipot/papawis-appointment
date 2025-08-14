@@ -234,15 +234,45 @@ export interface BookingRule {
 }
 
 // Booking system configuration
-export const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'yellow' },
-  confirmed: { label: 'Confirmed', color: 'green' },
-  cancelled: { label: 'Cancelled', color: 'red' },
-  completed: { label: 'Completed', color: 'blue' },
-  no_show: { label: 'No Show', color: 'gray' },
+export const BOOKING_STATUS_CONFIG: Record<BookingStatus, {
+  label: string;
+  color: string;
+  variant: 'default' | 'destructive' | 'outline' | 'secondary';
+  className: string;
+}> = {
+  pending: {
+    label: 'Pending',
+    color: 'yellow',
+    variant: 'outline',
+    className: 'border-yellow-200 text-yellow-800 bg-yellow-50',
+  },
+  confirmed: {
+    label: 'Confirmed',
+    color: 'green',
+    variant: 'default',
+    className: 'border-green-200 text-green-800 bg-green-50',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'red',
+    variant: 'destructive',
+    className: 'border-red-200 text-red-800 bg-red-50',
+  },
+  completed: {
+    label: 'Completed',
+    color: 'blue',
+    variant: 'secondary',
+    className: 'border-blue-200 text-blue-800 bg-blue-50',
+  },
+  no_show: {
+    label: 'No Show',
+    color: 'gray',
+    variant: 'outline',
+    className: 'border-gray-200 text-gray-800 bg-gray-50',
+  },
 };
 
-export const BOOKING_TYPE_CONFIG: Record<BookingType, { label: string; color: string }> = {
+export const BOOKING_TYPE_CONFIG: Record<BookingType, { label: string; color: string; icon?: any }> = {
   regular: { label: 'Regular', color: 'blue' },
   recurring: { label: 'Recurring', color: 'purple' },
   event: { label: 'Event', color: 'orange' },

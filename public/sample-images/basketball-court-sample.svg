@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+  <!-- Basketball Court Background -->
+  <rect width="600" height="400" fill="#8B4513"/>
+
+  <!-- Court Lines -->
+  <g stroke="white" stroke-width="3" fill="none">
+    <!-- Outer Court -->
+    <rect x="50" y="50" width="500" height="300"/>
+
+    <!-- Center Circle -->
+    <circle cx="300" cy="200" r="60"/>
+
+    <!-- Free Throw Circles -->
+    <circle cx="150" cy="200" r="60"/>
+    <circle cx="450" cy="200" r="60"/>
+
+    <!-- Three Point Lines -->
+    <path d="M 50 120 Q 150 80 250 120 L 250 280 Q 150 320 50 280 Z"/>
+    <path d="M 550 120 Q 450 80 350 120 L 350 280 Q 450 320 550 280 Z"/>
+
+    <!-- Free Throw Lanes -->
+    <rect x="50" y="140" width="100" height="120"/>
+    <rect x="450" y="140" width="100" height="120"/>
+  </g>
+
+  <!-- Basketball Hoops -->
+  <g fill="#FF6B35">
+    <circle cx="50" cy="200" r="8"/>
+    <circle cx="550" cy="200" r="8"/>
+  </g>
+
+  <!-- Title -->
+  <text x="300" y="380" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">
+    Basketball Court Sample
+  </text>
+</svg>

@@ -1,5 +1,8 @@
 import { useState, useRef } from "react";
 import { Upload, X, Image, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   images: File[];
@@ -118,15 +121,15 @@ export function ImageUpload({
     <div className="space-y-4">
       {/* Upload Area */}
       <div
-        className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
+        className={cn(
+          "relative border-2 border-dashed rounded-lg p-6 transition-colors",
           dragActive
-            ? "border-blue-500 bg-blue-50"
-            : "border-slate-300 hover:border-slate-400"
-        } ${
+            ? "border-primary bg-primary/10"
+            : "border-border hover:border-primary/50",
           images.length >= maxImages
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer"
-        }`}
+        )}
         onDragEnter={handleDragIn}
         onDragLeave={handleDragOut}
         onDragOver={handleDrag}
@@ -145,18 +148,19 @@ export function ImageUpload({
 
         <div className="text-center">
           <Upload
-            className={`mx-auto h-12 w-12 ${
-              dragActive ? "text-blue-500" : "text-slate-400"
-            }`}
+            className={cn(
+              "mx-auto h-12 w-12",
+              dragActive ? "text-primary" : "text-muted-foreground"
+            )}
           />
           <div className="mt-4">
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-foreground">
               {images.length >= maxImages
                 ? `Maximum ${maxImages} images reached`
                 : "Drop images here or click to browse"}
             </p>
             {images.length < maxImages && (
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Supports JPG, PNG, WebP up to{" "}
                 {(maxSizeBytes / 1024 / 1024).toFixed(0)}MB each
               </p>
@@ -165,52 +169,54 @@ export function ImageUpload({
         </div>
 
         {dragActive && (
-          <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-lg flex items-center justify-center">
-            <p className="text-blue-700 font-medium">Drop images here</p>
+          <div className="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center">
+            <p className="text-primary font-medium">Drop images here</p>
           </div>
         )}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-sm text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Image Previews */}
       {images.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-slate-900">
+          <h4 className="text-sm font-medium text-foreground">
             Uploaded Images ({images.length}/{maxImages})
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((file, index) => (
               <div key={index} className="relative group">
-                <div className="aspect-square rounded-lg overflow-hidden bg-slate-100">
+                <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                   <img
                     src={getImagePreview(file)}
                     alt={file.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     removeImage(index);
                   }}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
                 <div className="mt-2">
                   <p
-                    className="text-xs text-slate-600 truncate"
+                    className="text-xs text-foreground truncate"
                     title={file.name}
                   >
                     {file.name}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {(file.size / 1024 / 1024).toFixed(1)}MB
                   </p>
                 </div>
@@ -223,8 +229,8 @@ export function ImageUpload({
       {/* Upload Instructions */}
       {images.length === 0 && (
         <div className="text-center py-4">
-          <Image className="mx-auto h-8 w-8 text-slate-400" />
-          <p className="text-sm text-slate-500 mt-2">
+          <Image className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground mt-2">
             No images uploaded yet. Add some images to showcase your facility.
           </p>
         </div>

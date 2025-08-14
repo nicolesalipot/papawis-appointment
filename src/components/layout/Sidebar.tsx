@@ -8,6 +8,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const navigation = [
   {
@@ -45,55 +46,45 @@ const navigation = [
 export function Sidebar() {
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white/80 backdrop-blur-sm border-r border-slate-200/50 px-6 shadow-sm">
+      <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background/80 backdrop-blur-sm border-r border-border px-6 shadow-sm">
         {/* Logo */}
         <div className="flex h-16 shrink-0 items-center">
           <div className="flex items-center gap-2">
-            <Calendar className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              SportsFacility
-            </span>
+            <Calendar className="h-8 w-8 text-foreground" />
+            <span className="text-xl font-bold text-foreground">Papawis</span>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col">
-          <ul role="list" className="flex flex-1 flex-col gap-y-7">
-            <li>
-              <ul role="list" className="-mx-2 space-y-1">
-                {navigation.map((item) => (
-                  <li key={item.name}>
-                    <NavLink
-                      to={item.href}
-                      className={({ isActive }) =>
-                        cn(
-                          "group flex gap-x-3 rounded-lg p-3 text-sm font-medium leading-6 transition-all duration-200",
-                          isActive
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-sm"
-                            : "text-slate-700 hover:text-blue-700 hover:bg-slate-50"
-                        )
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <item.icon
-                            className={cn(
-                              "h-5 w-5 shrink-0 transition-colors",
-                              isActive
-                                ? "text-blue-600"
-                                : "text-slate-400 group-hover:text-blue-600"
-                            )}
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </>
+          <div className="flex flex-1 flex-col gap-y-7">
+            <div className="space-y-1">
+              {navigation.map((item) => (
+                <NavLink key={item.name} to={item.href}>
+                  {({ isActive }) => (
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start gap-x-3 h-11 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-muted text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       )}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          </ul>
+                    >
+                      <item.icon
+                        className={cn(
+                          "h-5 w-5 shrink-0 transition-colors",
+                          isActive ? "text-foreground" : "text-muted-foreground"
+                        )}
+                        aria-hidden="true"
+                      />
+                      {item.name}
+                    </Button>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         </nav>
       </div>
     </div>

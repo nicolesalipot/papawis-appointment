@@ -18,6 +18,9 @@ import {
   ChevronRight,
   List,
   CalendarIcon,
+  Download,
+  RefreshCw,
+  Settings,
 } from "lucide-react";
 import { useBookingStore } from "@/store/bookingStore";
 import { useFacilityStore } from "@/store/facilityStore";
@@ -27,9 +30,48 @@ import {
   BOOKING_TYPE_CONFIG,
   BookingStatus,
   BookingType,
+  Booking,
 } from "@/lib/types/booking";
 import { cn } from "@/lib/utils";
 import { BookingCalendar } from "@/components/calendar/BookingCalendar";
+import { BookingFormDialog } from "@/components/bookings/BookingFormDialog";
+import { BookingDetailDialog } from "@/components/bookings/BookingDetailDialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function BookingsPage() {
   const {
@@ -39,8 +81,6 @@ export function BookingsPage() {
     stats,
     isLoading,
     error,
-    fetchBookings,
-    fetchBookingStats,
     setFilters,
     setPagination,
     confirmBooking,
@@ -49,26 +89,13 @@ export function BookingsPage() {
     deleteBooking,
   } = useBookingStore();
 
-  const { facilities, fetchFacilities } = useFacilityStore();
+  const { facilities } = useFacilityStore();
   const { users } = useUserStore();
 
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
-
-  useEffect(() => {
-    fetchBookings();
-    fetchBookingStats();
-    fetchFacilities();
-  }, [
-    fetchBookings,
-    fetchBookingStats,
-    fetchFacilities,
-    filters,
-    pagination.page,
-    pagination.pageSize,
-  ]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -201,194 +228,230 @@ export function BookingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-foreground">
             Booking Management
           </h1>
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-muted-foreground">
             Manage facility bookings, availability, and schedules.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* View Toggle */}
-          <div className="flex items-center bg-slate-100 rounded-lg p-1">
-            <button
+          <div className="flex items-center bg-muted rounded-lg p-1">
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="sm"
               onClick={() => setViewMode("list")}
-              className={cn(
-                "px-3 py-1 text-sm rounded-md transition-colors flex items-center gap-1",
-                viewMode === "list"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              )}
+              className="h-7"
             >
-              <List className="h-3 w-3" />
+              <List className="h-3 w-3 mr-1" />
               List
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={viewMode === "calendar" ? "secondary" : "ghost"}
+              size="sm"
               onClick={() => setViewMode("calendar")}
-              className={cn(
-                "px-3 py-1 text-sm rounded-md transition-colors flex items-center gap-1",
-                viewMode === "calendar"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              )}
+              className="h-7"
             >
-              <CalendarIcon className="h-3 w-3" />
+              <CalendarIcon className="h-3 w-3 mr-1" />
               Calendar
-            </button>
+            </Button>
           </div>
 
-          <button
+          <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
+            className="flex items-center gap-2"
           >
             <CalendarPlus className="h-4 w-4" />
             New Booking
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Calendar className="h-5 w-5 text-blue-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Bookings
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.total}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Total Bookings
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.total}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Confirmed
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.confirmed}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+                  <DollarSign className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(stats.revenue.total)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">Confirmed</p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.confirmed}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Utilization
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.utilization.overall}%
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-                <DollarSign className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">Revenue</p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {formatCurrency(stats.revenue.total)}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Utilization
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.utilization.overall}%
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Search and Filters - Only show for list view */}
       {viewMode === "list" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search bookings..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col gap-4">
+              {/* Search Bar */}
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search bookings..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Filters Row */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Facility Filter */}
+                <div className="min-w-[160px]">
+                  <Select
+                    value={filters.facilityId || "all"}
+                    onValueChange={(value) =>
+                      handleFilterChange(
+                        "facilityId",
+                        value === "all" ? "" : value
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Facilities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Facilities</SelectItem>
+                      {facilities.map((facility) => (
+                        <SelectItem key={facility.id} value={facility.id}>
+                          {facility.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Status Filter */}
+                <div className="min-w-[140px]">
+                  <Select
+                    value={filters.status || "all"}
+                    onValueChange={(value) =>
+                      handleFilterChange("status", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      {Object.entries(BOOKING_STATUS_CONFIG).map(
+                        ([value, config]) => (
+                          <SelectItem key={value} value={value}>
+                            {config.label}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Type Filter */}
+                <div className="min-w-[120px]">
+                  <Select
+                    value={filters.type || "all"}
+                    onValueChange={(value) => handleFilterChange("type", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      {Object.entries(BOOKING_TYPE_CONFIG).map(
+                        ([value, config]) => (
+                          <SelectItem key={value} value={value}>
+                            {config.label}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Clear Filters */}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilters({
+                      search: "",
+                      facilityId: "",
+                      status: "all",
+                      type: "all",
+                    });
+                  }}
+                  className="ml-auto"
+                >
+                  Clear Filters
+                </Button>
+              </div>
             </div>
-
-            {/* Facility Filter */}
-            <select
-              value={filters.facilityId || "all"}
-              onChange={(e) =>
-                handleFilterChange(
-                  "facilityId",
-                  e.target.value === "all" ? "" : e.target.value
-                )
-              }
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Facilities</option>
-              {facilities.map((facility) => (
-                <option key={facility.id} value={facility.id}>
-                  {facility.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Status Filter */}
-            <select
-              value={filters.status || "all"}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Statuses</option>
-              {Object.entries(BOOKING_STATUS_CONFIG).map(([value, config]) => (
-                <option key={value} value={value}>
-                  {config.label}
-                </option>
-              ))}
-            </select>
-
-            {/* Type Filter */}
-            <select
-              value={filters.type || "all"}
-              onChange={(e) => handleFilterChange("type", e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Types</option>
-              {Object.entries(BOOKING_TYPE_CONFIG).map(([value, config]) => (
-                <option key={value} value={value}>
-                  {config.label}
-                </option>
-              ))}
-            </select>
-
-            {/* Clear Filters */}
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setFilters({
-                  search: "",
-                  facilityId: "",
-                  status: "all",
-                  type: "all",
-                });
-              }}
-              className="px-3 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Calendar View */}
@@ -415,38 +478,52 @@ export function BookingsPage() {
         <>
           {/* Bulk Actions */}
           {selectedBookings.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-blue-900">
-                  {selectedBookings.length} booking
-                  {selectedBookings.length !== 1 ? "s" : ""} selected
-                </span>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
-                    Confirm
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
-                    Complete
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
-                    Cancel
-                  </button>
+            <Alert>
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    {selectedBookings.length} booking
+                    {selectedBookings.length !== 1 ? "s" : ""} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-green-700 border-green-300 bg-green-50 hover:bg-green-100"
+                    >
+                      Confirm
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-yellow-700 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
+                    >
+                      Complete
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-700 border-red-300 bg-red-50 hover:bg-red-100"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           {/* Loading State */}
           {isLoading && (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           )}
 
@@ -658,11 +735,11 @@ export function BookingsPage() {
           {/* Empty State */}
           {!isLoading && bookings.length === 0 && !error && (
             <div className="text-center py-12">
-              <Calendar className="mx-auto h-12 w-12 text-slate-400" />
-              <h3 className="mt-2 text-sm font-semibold text-slate-900">
+              <Calendar className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
                 No bookings found
               </h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {filters.search ||
                 filters.facilityId ||
                 filters.status !== "all" ||
@@ -671,63 +748,61 @@ export function BookingsPage() {
                   : "Get started by creating a new booking."}
               </p>
               <div className="mt-6">
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-                >
+                <Button onClick={() => setIsCreateModalOpen(true)}>
                   Create your first booking
-                </button>
+                </Button>
               </div>
             </div>
           )}
 
           {/* Pagination */}
           {!isLoading && bookings.length > 0 && (
-            <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 px-6 py-4">
-              <div className="text-sm text-slate-600">
-                Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
-                {Math.min(
-                  pagination.page * pagination.pageSize,
-                  pagination.total
-                )}{" "}
-                of {pagination.total} bookings
-              </div>
+            <Card>
+              <CardContent className="flex items-center justify-between px-6 py-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
+                  {Math.min(
+                    pagination.page * pagination.pageSize,
+                    pagination.total
+                  )}{" "}
+                  of {pagination.total} bookings
+                </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
-                  className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-
-                {Array.from(
-                  { length: pagination.totalPages },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                      page === pagination.page
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-600 bg-slate-100 hover:bg-slate-200"
-                    }`}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
                   >
-                    {page}
-                  </button>
-                ))}
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
 
-                <button
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.totalPages}
-                  className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+                  {Array.from(
+                    { length: pagination.totalPages },
+                    (_, i) => i + 1
+                  ).map((page) => (
+                    <Button
+                      key={page}
+                      variant={page === pagination.page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </>
       )}

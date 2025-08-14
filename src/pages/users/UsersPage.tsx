@@ -25,6 +25,34 @@ import {
   UserStatus,
 } from "@/lib/types/user";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function UsersPage() {
   const {
@@ -34,8 +62,6 @@ export function UsersPage() {
     stats,
     isLoading,
     error,
-    fetchUsers,
-    fetchUserStats,
     setFilters,
     setPagination,
     deleteUser,
@@ -47,17 +73,6 @@ export function UsersPage() {
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  useEffect(() => {
-    fetchUsers();
-    fetchUserStats();
-  }, [
-    fetchUsers,
-    fetchUserStats,
-    filters,
-    pagination.page,
-    pagination.pageSize,
-  ]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -135,200 +150,217 @@ export function UsersPage() {
     }
   };
 
-  const getRoleColor = (role: UserRole) => {
-    const colors = {
-      super_admin: "bg-red-100 text-red-800",
-      facility_manager: "bg-blue-100 text-blue-800",
-      member: "bg-green-100 text-green-800",
-    };
-    return colors[role];
-  };
-
-  const getStatusColor = (status: UserStatus) => {
-    const colors = {
-      active: "bg-green-100 text-green-800",
-      inactive: "bg-gray-100 text-gray-800",
-      pending: "bg-yellow-100 text-yellow-800",
-      suspended: "bg-red-100 text-red-800",
-    };
-    return colors[status];
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">User Management</h1>
-          <p className="mt-2 text-slate-600">
-            Manage user accounts, roles, and permissions.
-          </p>
-        </div>
-        <button
+    <div className="space-y-6">
+      {/* Top Actions */}
+      <div className="flex justify-end">
+        <Button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
+          className="flex items-center gap-2"
         >
           <UserPlus className="h-4 w-4" />
           Add User
-        </button>
+        </Button>
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Users className="h-5 w-5 text-blue-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Users
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.total}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Total Users
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.total}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                  <UserCheck className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Active Users
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.active}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-                <UserCheck className="h-5 w-5 text-green-600" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                  <UserPlus className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Recent Signups
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.recentSignups}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Active Users
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.active}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+                  <Shield className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Active Today
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stats.activeToday}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-                <UserPlus className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Recent Signups
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.recentSignups}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-                <Shield className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-600">
-                  Active Today
-                </p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {stats.activeToday}
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Role Filter */}
+              <div className="min-w-[140px]">
+                <Select
+                  value={filters.role || "all"}
+                  onValueChange={(value) => handleFilterChange("role", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Roles</SelectItem>
+                    {Object.entries(USER_ROLES).map(([value, config]) => (
+                      <SelectItem key={value} value={value}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="min-w-[140px]">
+                <Select
+                  value={filters.status || "all"}
+                  onValueChange={(value) => handleFilterChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    {Object.entries(USER_STATUS_CONFIG).map(
+                      ([value, config]) => (
+                        <SelectItem key={value} value={value}>
+                          {config.label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clear Filters */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilters({ search: "", role: "all", status: "all" });
+                }}
+                className="ml-auto"
+              >
+                Clear Filters
+              </Button>
+            </div>
           </div>
-
-          {/* Role Filter */}
-          <select
-            value={filters.role || "all"}
-            onChange={(e) => handleFilterChange("role", e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Roles</option>
-            {Object.entries(USER_ROLES).map(([value, config]) => (
-              <option key={value} value={value}>
-                {config.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filters.status || "all"}
-            onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            {Object.entries(USER_STATUS_CONFIG).map(([value, config]) => (
-              <option key={value} value={value}>
-                {config.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Clear Filters */}
-          <button
-            onClick={() => {
-              setSearchTerm("");
-              setFilters({ search: "", role: "all", status: "all" });
-            }}
-            className="px-3 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-          >
-            Clear Filters
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Bulk Actions */}
       {selectedUsers.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-blue-900">
-              {selectedUsers.length} user{selectedUsers.length !== 1 ? "s" : ""}{" "}
-              selected
-            </span>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
-                Activate
-              </button>
-              <button className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
-                Deactivate
-              </button>
-              <button className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
-                Delete
-              </button>
+        <Alert>
+          <AlertDescription>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                {selectedUsers.length} user
+                {selectedUsers.length !== 1 ? "s" : ""} selected
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-green-700 border-green-300 bg-green-50 hover:bg-green-100"
+                >
+                  Activate
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-yellow-700 border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
+                >
+                  Deactivate
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-700 border-red-300 bg-red-50 hover:bg-red-100"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Loading State */}
       {isLoading && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       )}
 
@@ -407,25 +439,21 @@ export function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          {user.avatar ? (
-                            <img
-                              src={user.avatar}
-                              alt={`${user.firstName} ${user.lastName}`}
-                              className="h-10 w-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                              {user.firstName.charAt(0)}
-                              {user.lastName.charAt(0)}
-                            </div>
-                          )}
-                        </div>
+                        <Avatar>
+                          <AvatarImage
+                            src={user.avatar}
+                            alt={`${user.firstName} ${user.lastName}`}
+                          />
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {user.firstName.charAt(0)}
+                            {user.lastName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-slate-900">
+                          <div className="text-sm font-medium text-foreground">
                             {user.firstName} {user.lastName}
                           </div>
-                          <div className="text-sm text-slate-500 flex items-center gap-1">
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {user.email}
                           </div>
@@ -433,80 +461,95 @@ export function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(
-                          user.role
-                        )}`}
+                      <Badge
+                        variant={
+                          user.role === "super_admin"
+                            ? "destructive"
+                            : user.role === "facility_manager"
+                            ? "default"
+                            : "secondary"
+                        }
                       >
                         {USER_ROLES[user.role].label}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          user.status
-                        )}`}
+                      <Badge
+                        variant={
+                          user.status === "active"
+                            ? "default"
+                            : user.status === "inactive"
+                            ? "secondary"
+                            : user.status === "pending"
+                            ? "outline"
+                            : "destructive"
+                        }
                       >
                         {USER_STATUS_CONFIG[user.status].label}
-                      </span>
+                      </Badge>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {user.lastLoginAt
                         ? new Date(user.lastLoginAt).toLocaleDateString()
                         : "Never"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-1">
-                        <button
-                          className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
-                          title="Edit user"
-                        >
+                        <Button variant="ghost" size="sm" title="Edit user">
                           <Edit3 className="h-4 w-4" />
-                        </button>
+                        </Button>
                         {user.status === "active" ? (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDeactivate(user.id)}
-                            className="p-1 text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 rounded"
                             title="Deactivate user"
+                            className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
                           >
                             <UserX className="h-4 w-4" />
-                          </button>
+                          </Button>
                         ) : (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleActivate(user.id)}
-                            className="p-1 text-green-600 hover:text-green-900 hover:bg-green-50 rounded"
                             title="Activate user"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
                           >
                             <UserCheck className="h-4 w-4" />
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() =>
                             handleResetPassword(
                               user.id,
                               `${user.firstName} ${user.lastName}`
                             )
                           }
-                          className="p-1 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded"
                           title="Reset password"
+                          className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                         >
                           <Key className="h-4 w-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() =>
                             handleDelete(
                               user.id,
                               `${user.firstName} ${user.lastName}`
                             )
                           }
-                          className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded"
                           title="Delete user"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -520,11 +563,11 @@ export function UsersPage() {
       {/* Empty State */}
       {!isLoading && users.length === 0 && !error && (
         <div className="text-center py-12">
-          <Users className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-2 text-sm font-semibold text-slate-900">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-semibold text-foreground">
             No users found
           </h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {filters.search ||
             filters.role !== "all" ||
             filters.status !== "all"
@@ -532,59 +575,61 @@ export function UsersPage() {
               : "Get started by creating a new user."}
           </p>
           <div className="mt-6">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-            >
+            <Button onClick={() => setIsCreateModalOpen(true)}>
               Add your first user
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {/* Pagination */}
       {!isLoading && users.length > 0 && (
-        <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 px-6 py-4">
-          <div className="text-sm text-slate-600">
-            Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
-            {Math.min(pagination.page * pagination.pageSize, pagination.total)}{" "}
-            of {pagination.total} users
-          </div>
+        <Card>
+          <CardContent className="flex items-center justify-between px-6 py-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {(pagination.page - 1) * pagination.pageSize + 1} to{" "}
+              {Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.total
+              )}{" "}
+              of {pagination.total} users
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page <= 1}
-              className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
 
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
-              (page) => (
-                <button
+              {Array.from(
+                { length: pagination.totalPages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <Button
                   key={page}
+                  variant={page === pagination.page ? "default" : "outline"}
+                  size="sm"
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                    page === pagination.page
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-600 bg-slate-100 hover:bg-slate-200"
-                  }`}
                 >
                   {page}
-                </button>
-              )
-            )}
+                </Button>
+              ))}
 
-            <button
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

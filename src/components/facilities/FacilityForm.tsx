@@ -5,6 +5,27 @@ import { useState } from "react";
 import { X, Save, Upload, Trash2 } from "lucide-react";
 import { FacilityFormData, FacilityType, DayHours } from "@/lib/types/facility";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const facilitySchema = z.object({
   name: z.string().min(1, "Facility name is required"),
@@ -195,29 +216,17 @@ export function FacilityForm({
     setValue(`operatingHours.${day}.${field}`, value);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">
-              {isEdit ? "Edit Facility" : "Create New Facility"}
-            </h2>
-            <p className="text-slate-600 mt-1">
-              Step {currentStep + 1} of {steps.length}:{" "}
-              {steps[currentStep].title}
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">
+            {isEdit ? "Edit Facility" : "Create New Facility"}
+          </DialogTitle>
+          <p className="text-muted-foreground mt-1">
+            Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+          </p>
+        </DialogHeader>
 
         {/* Progress Bar */}
         <div className="px-6 py-4 bg-slate-50">
@@ -654,7 +663,7 @@ export function FacilityForm({
             )}
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
